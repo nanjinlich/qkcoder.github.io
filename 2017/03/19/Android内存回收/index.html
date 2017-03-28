@@ -1,0 +1,888 @@
+<!doctype html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="内存回收," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="本篇主要是笔者翻阅相关资料后，对内存管理的思考和总结。内存管理，是一两句讲不清的一个概念。本篇仅仅是基于Android平台，并结合JVM的相关原理机制展开。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android内存回收">
+<meta property="og:url" content="http://yoursite.com/2017/03/19/Android内存回收/index.html">
+<meta property="og:site_name" content="qkcoder'blog">
+<meta property="og:description" content="本篇主要是笔者翻阅相关资料后，对内存管理的思考和总结。内存管理，是一两句讲不清的一个概念。本篇仅仅是基于Android平台，并结合JVM的相关原理机制展开。">
+<meta property="og:image" content="http://yoursite.com/2017/03/19/Android内存回收/031901.png">
+<meta property="og:image" content="http://yoursite.com/2017/03/19/Android内存回收/031902.png">
+<meta property="og:image" content="http://yoursite.com/2017/03/19/Android内存回收/031903.png">
+<meta property="og:image" content="http://yoursite.com/2017/03/19/Android内存回收/031904.png">
+<meta property="og:image" content="http://yoursite.com/2017/03/19/Android内存回收/031905.png">
+<meta property="og:image" content="http://yoursite.com/2017/03/19/Android内存回收/031906.png">
+<meta property="og:image" content="http://yoursite.com/2017/03/19/Android内存回收/031907.png">
+<meta property="og:image" content="http://yoursite.com/2017/03/19/Android内存回收/031908.png">
+<meta property="og:image" content="http://yoursite.com/2017/03/19/Android内存回收/031909.png">
+<meta property="og:image" content="http://yoursite.com/2017/03/19/Android内存回收/031910.png">
+<meta property="og:updated_time" content="2017-03-28T13:03:39.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android内存回收">
+<meta name="twitter:description" content="本篇主要是笔者翻阅相关资料后，对内存管理的思考和总结。内存管理，是一两句讲不清的一个概念。本篇仅仅是基于Android平台，并结合JVM的相关原理机制展开。">
+<meta name="twitter:image" content="http://yoursite.com/2017/03/19/Android内存回收/031901.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: false,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/03/19/Android内存回收/"/>
+
+
+
+
+
+  <title> Android内存回收 | qkcoder'blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">qkcoder'blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">reading the fucking source code</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/19/Android内存回收/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="qkcoder">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://avatars3.githubusercontent.com/u/21101545?v=3&s=460">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="qkcoder'blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android内存回收
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-19T20:00:23+08:00">
+                2017-03-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java虚拟机/" itemprop="url" rel="index">
+                    <span itemprop="name">Java虚拟机</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/03/19/Android内存回收/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2017/03/19/Android内存回收/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本篇主要是笔者翻阅相关资料后，对内存管理的思考和总结。内存管理，是一两句讲不清的一个概念。本篇仅仅是基于Android平台，并结合JVM的相关原理机制展开。</p>
+<a id="more"></a>
+<h2 id="开篇之言"><a href="#开篇之言" class="headerlink" title="开篇之言"></a>开篇之言</h2><p>虽然VM有相关的内存自动回收机制，但如果把握不好，同样会引起内存泄漏问题，这不仅仅会导致App的Crash，也会使应用的性能和表现降低。接下来，我们从GC的概念出发，接着对引起Android应用内存泄漏的原因、线程间通信怎么引起内存泄漏、防治策略等几个方面来分别讨论。</p>
+<h2 id="垃圾收集"><a href="#垃圾收集" class="headerlink" title="垃圾收集"></a>垃圾收集</h2><p>垃圾收集(Garbage Collection，GC)，这项技术出来的得比Java久远。GC一般考虑的有三件事：</p>
+<ul>
+<li>哪些内存需要回收</li>
+<li>什么时候回收</li>
+<li>如何回收</li>
+</ul>
+<h3 id="对象是不是还活着"><a href="#对象是不是还活着" class="headerlink" title="对象是不是还活着"></a>对象是不是还活着</h3><p>垃圾回收器在对堆进行回收前，第一件事就是确定堆中的对象实例之中哪些还”存活”着，哪些已经”死去”了(即不再使用)。</p>
+<h4 id="引用计数算法"><a href="#引用计数算法" class="headerlink" title="引用计数算法"></a>引用计数算法</h4><p>给对象中添加一个引用计数器，每当一个地方引用它时，计数器值加1;当引用失效时，计数器值减1。任何技术器值为0的对象不可能再被使用。这个算法，微软公司COM，Payhon语言，OC语言等都使用了引用计数算法进行内存管理。而主流的JVM没有选用引用计数算法，主要原因是对象之间的相互循环引用问题。</p>
+<p>测试代码:(copy 自《深入理解Java虚拟机》)</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">/**</div><div class="line"> * 引用计数 </div><div class="line"> * @author qkcoder</div><div class="line"> * @date   2017年3月19日</div><div class="line"> * @description</div><div class="line"> *   主流JVM 没有采用引用技术算法 回收GC</div><div class="line"> */</div><div class="line">public class ReferenceCountGc &#123;</div><div class="line">	public Object instance = null;</div><div class="line"></div><div class="line">	private static final int _1MB = 1024 * 1024;</div><div class="line"></div><div class="line">	private byte[] bigSize = new byte[2 * _1MB];</div><div class="line"></div><div class="line">	public static void main(String[] args) &#123;</div><div class="line">		ReferenceCountGc objA = new ReferenceCountGc();</div><div class="line">		ReferenceCountGc objB = new ReferenceCountGc();</div><div class="line"></div><div class="line">		objA.instance = objB;</div><div class="line">		objB.instance = objA;</div><div class="line">		</div><div class="line">		objA=null;</div><div class="line">		objB=null;</div><div class="line"></div><div class="line">		System.gc();</div><div class="line">	&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>温馨提示，在EclipseIDE中打印GC回收信息，需要在Run/Debug中配置VM参数，具体如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">-verbose:gc -Xms20M -Xmx20M -Xmn10M -XX:+PrintGCDetails -XX:SurvivorRatio=8</div></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">[GC (System.gc()) [PSYoungGen: 4833K-&gt;352K(9728K)] 4833K-&gt;360K(19968K), 0.0013661 secs] [Times: user=0.00 sys=0.01, real=0.00 secs] </div><div class="line">[Full GC (System.gc()) [PSYoungGen: 352K-&gt;0K(9728K)] [ParOldGen: 8K-&gt;275K(10240K)] 360K-&gt;275K(19968K), [Metaspace: 2629K-&gt;2629K(1056768K)], 0.0045657 secs] [Times: user=0.01 sys=0.00, real=0.01 secs] </div><div class="line">Heap</div><div class="line"> PSYoungGen      total 9728K, used 92K [0x00000007bf600000, 0x00000007c0000000, 0x00000007c0000000)</div><div class="line">  eden space 9216K, 1% used [0x00000007bf600000,0x00000007bf617218,0x00000007bff00000)</div><div class="line">  from space 512K, 0% used [0x00000007bff00000,0x00000007bff00000,0x00000007bff80000)</div><div class="line">  to   space 512K, 0% used [0x00000007bff80000,0x00000007bff80000,0x00000007c0000000)</div><div class="line"> ParOldGen       total 10240K, used 275K [0x00000007bec00000, 0x00000007bf600000, 0x00000007bf600000)</div><div class="line">  object space 10240K, 2% used [0x00000007bec00000,0x00000007bec44da8,0x00000007bf600000)</div><div class="line"> Metaspace       used 2636K, capacity 4486K, committed 4864K, reserved 1056768K</div><div class="line">  class space    used 286K, capacity 386K, committed 512K, reserved 1048576K</div></pre></td></tr></table></figure>
+<p>4833K-&gt;352K表明虚拟机并没有因为相互引用问题而不回收它们，这佐证了VM不是通过引用计数算法确定对象是否存活。</p>
+<h4 id="可达性分析算法"><a href="#可达性分析算法" class="headerlink" title="可达性分析算法"></a>可达性分析算法</h4><p>主流的商用程序语言(Java，C#等)主流实现中都是通过可达性分析算法判定对象是否存活的。算法的基本思想是通过一系列称为”GC Roots”的对象作为起始点，从这些节点开始向下搜索，搜索走过的路径称为引用链。如果一个对象到GC Roots没有任何引用链相连（离散数学中的图论也称为GC Roots到这个对象不可达）以此证明对象不可用。</p>
+<p>下面看例子：(取自《Efficient Android Theading》)</p>
+<img src="/2017/03/19/Android内存回收/031901.png" alt="可达性分析示意图" title="可达性分析示意图">
+<p>A、B可用，被GC视为不回收的对象，C不可用，因为GC Roots不可达C，被视为可回收对象。</p>
+<p>GC什么时候回收和如何回收，篇幅有限，不讨论。</p>
+<h2 id="内存泄漏"><a href="#内存泄漏" class="headerlink" title="内存泄漏"></a>内存泄漏</h2><p>首先我们知道Android是基于Dalvik VM(最新的是ART VM)的，当堆的这个共享内存增大后，VM通过GC频繁地回收分配的内存来管理内存。每一个进程，通常也对应每一个应用，有自己的VM和自己的垃圾回收器。应用如果通过分配对象使堆填满了且不能及时回收，这就会造成内存泄漏。</p>
+<p>内存泄漏的概念，有时被严格定义为为应用分配的内存不再使用了而不能被GC回收，因此，内存被占用了直到应用进程退出后才被释放。一个更加宽泛的定义将包括长时间分配的内存，特别是拱曲的内存分配。下面讨论的，也是这个更加宽泛的定义，因为超过必须长时间分配内存，可能导致内存耗尽。</p>
+<h3 id="线程相关的内存泄漏"><a href="#线程相关的内存泄漏" class="headerlink" title="线程相关的内存泄漏"></a>线程相关的内存泄漏</h3><p>应用线程潜在地暴露内存泄漏危机，因为它们可以在运行期间阻碍GC回收器回收内存。仅当一个线程已经完成运行后，它的对象才能够从堆中释放回收。</p>
+<p>应用线程包括UI线程，Binder线程，工作线程。后两个线程可以在应用运行期间启动和结束，因此它们可以在结束时使GC roots不可达它们中的对象，从而释放对象引用。这些线程存活期间决定了内存泄漏的风险。</p>
+<p>关于线程的内存泄漏的两个重要特点：</p>
+<ul>
+<li><p>潜在危机</p>
+<p>随着一个线程存活和保持对象引用，内存泄漏的风险在增加。短期运行的线程实例极少造成内存泄漏，但由于运行长任务、处理消息、阻塞的长期运行的线程会保持不再需要的对象引用。</p>
+</li>
+<li><p>泄漏大小</p>
+<p>偶尔泄漏小量的内存的一个应用可能将在大部分时间运行良好，内存的泄漏将被忽略掉。但如果泄漏的大小变大时，比如说位图Bitmap,视图层等的一点泄漏可能足够耗光应用的堆。</p>
+</li>
+</ul>
+<p>一句话，应用应该实现较低内存泄漏风险且保持潜在的泄漏尽可能小。记住以上两点，Android开发很受用。下面详细分析过程。</p>
+<h4 id="线程运行"><a href="#线程运行" class="headerlink" title="线程运行"></a>线程运行</h4><p>如下图（取自《Efficient Android Theading》）</p>
+<img src="/2017/03/19/Android内存回收/031902.png" alt="工作线程的生命周期" title="工作线程的生命周期">
+<p>一个工作线程的生命周期基本上遵循三步：</p>
+<ul>
+<li>创建一个线程对象 :一个线程对象呗实例化</li>
+<li>开始线程运行：线程被启动且任务被执行</li>
+<li>线程终止：任务已经完成了运行</li>
+</ul>
+<p>当线程在运行时，线程对象自己变成了一个GC root，并且它引用的所有对象是可达的。同样地，被一个运行的Runnable直接引用的所有对象是GC roots。因此，当一个线程运行，线程和Runnable实例都会保持其他对象的引用，不能让它们被回收直到线程终止。</p>
+<p>在方法中创建的对象在方法返回值后复合GC回收，除非这个方法返回对象给调用者，以至于对象会被其他方法引用。</p>
+<h5 id="内部类"><a href="#内部类" class="headerlink" title="内部类"></a>内部类</h5><p>内部类是封闭对象(比如说外部类)的成员，能够访问外部类的其他成员。因此，内部类隐式地含有对外部类的引用。</p>
+<p>如下图（取自《Efficient Android Theading》）：</p>
+<img src="/2017/03/19/Android内存回收/031903.png" alt="内部类引用树" title="内部类引用树">
+<p>代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">public class Outer &#123;</div><div class="line">   public void sampleMethod() &#123;</div><div class="line">       SampleThread sampleThread = new SampleThread();</div><div class="line">       sampleThread.start();</div><div class="line">   &#125;</div><div class="line">   private class SampleThread extends Thread &#123; </div><div class="line">       public void run() &#123;</div><div class="line">       Object sampleObject = new Object();</div><div class="line">       // Do execution</div><div class="line">  &#125; </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如代码所示，线程被定义为保持外部类的内部类，在线程运行的时候不会被GC标记为可回收对象。被定义为局部类和匿名内部类的线程和内部类一样和外部类有同样的联系，在运行期保持从一个GC root可达外部类。</p>
+<p>无论局部类，内部类，抑或匿名内部类都持有外部类的引用。具体原理可参考这篇博客:<a href="http://blog.csdn.net/zhangjg_blog/article/details/20000769" target="_blank" rel="external">http://blog.csdn.net/zhangjg_blog/article/details/20000769</a></p>
+<h5 id="静态内部类"><a href="#静态内部类" class="headerlink" title="静态内部类"></a>静态内部类</h5><p>静态内部类是一个闭包对象的类实例成员。定义为静态内部类的线程因此保持了外部对象的类的引用，而不是对象本身。因此，其他引用消失了，外部对象可被GC回收。</p>
+<p>这个规则，如下图所示（取自《Efficient Android Theading》）：</p>
+<img src="/2017/03/19/Android内存回收/031904.png" alt="静态内部类引用树" title="静态内部类引用树">
+<p>代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">public class Outer &#123;</div><div class="line">   public void sampleMethod() &#123;</div><div class="line">    SampleThread sampleThread = new SampleThread();                      </div><div class="line">        sampleThread.start();</div><div class="line">    &#125;</div><div class="line">    private static class SampleThread extends Thread &#123; </div><div class="line">       public void run() &#123;</div><div class="line">          Object sampleObject = new Object(); // Do execution</div><div class="line">       &#125; </div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>但是，在大部分情况下，我们开发者会想把Thread和Runnable分开。如果你创建了一个新的作为内部类的Runnable，它在运行期间将会持有外部类的引用，尽管它运行在一个静态内部类中。</p>
+<p>如下图所示（取自《Efficient Android Theading》）：</p>
+<img src="/2017/03/19/Android内存回收/031905.png" alt="包含内部类的静态内部类引用树" title="包含内部类的静态内部类引用树">
+<p>代码如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">public class Outer &#123;</div><div class="line">   public void sampleMethod() &#123;</div><div class="line">    SampleThread sampleThread = new SampleThread(</div><div class="line">       new Runnable() &#123; </div><div class="line">          @Override</div><div class="line">          public void run() &#123;</div><div class="line">             Object sampleObject = new Object(); // Do execution</div><div class="line">           &#125; </div><div class="line">       &#125;</div><div class="line">     );</div><div class="line">     sampleThread.start();</div><div class="line">    &#125;</div><div class="line">   private static class SampleThread extends Thread &#123;</div><div class="line">      public SampleThread(Runnable runnable) &#123;</div><div class="line">           super(runnable); </div><div class="line">      &#125;</div><div class="line">  &#125; </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="生命周期不同步"><a href="#生命周期不同步" class="headerlink" title="生命周期不同步"></a>生命周期不同步</h5><p>Android中内存泄漏一个根本原因是组件、对象和线程间生命周期不同步。对象实例分配在堆中，当它们被线程引用时，被保留在内存里。然而在Android中，应用不仅仅必须控制对象的生命周期，同时也要控制组件的生命周期。四大组件：Activity、Serivice、BroadcastReceiver和ContentProvider有他们自己的的生命周期，且不遵循它们的对象生命周期。</p>
+<p>什么意思？先来看个图（取自《Efficient Android Theading》）：</p>
+<img src="/2017/03/19/Android内存回收/031906.png" alt="Activity的生命周期" title="Activity的生命周期">
+<p>随着Activity组件的创建，也就说onCreate()方法被调用了，导致了一个Activity的Java对象被创建。从onCreate()到onDestory()整个完整的生命周期内，潜在的Java对象也在使用中。当Activity对象已经被系统结束销毁时，组件的生命周期通过调用onDestory()结束。这个情况发生可能有多个原因：</p>
+<ul>
+<li>用户按了返回键，暗示结束了Activity。</li>
+<li>Activity调用finish()显式结束。</li>
+<li>系统已经决定了可以被杀掉的Activity运行的应用进程，得以空出系统资源。</li>
+<li>配置项的变化，比如设备屏幕旋转了，这会销毁Activity且重新创建。</li>
+</ul>
+<p>当一个Activity组件终止后，Activity对象可能仍驻留在堆上。由GC回收器决定何时Activity对象可以被移出堆。如果有任何这个Activity对象的引用在组件销毁后还在内存中徘徊游荡，这个对象将驻留堆中，不符合GC回收。图中可以看出ActivityA的对象在Activity组件销毁后，还在堆中保留一段时间，这可以视为一个内存泄漏。</p>
+<p>如下图（取自《Efficient Android Theading》）：</p>
+<img src="/2017/03/19/Android内存回收/031907.png" alt="Activity组件和对象的生命周期" title="Activity组件和对象的生命周期">
+<p>当在ActivityA启动时启动了一个线程，线程内部持有外部Activity对象的引用，这将导致Activity组件已经销毁后，其Activity对象还驻留在堆中。而当设别旋转后，这可能会导致多个并发的线程引用这个Activity对象，这势必带来内存泄漏的问题。</p>
+<h4 id="线程通信"><a href="#线程通信" class="headerlink" title="线程通信"></a>线程通信</h4><p>线程运行是内存泄漏的潜在源头，同样线程间的消息传递机制也有内存泄漏的问题。这个泄漏可能发生在UI线程或者由应用创建的其他线程。对于一个接收其他线程消息的线程。它需要有一个消息队列MessageQueue去维护待处理的消息，一个Looper去分发消息，一个Handler去执行消息。大部分这些对象仅仅被生产者线程引用，当线程退出后，可能GC回收。但Handler却是内存泄漏的根源，因为它通过一个对象链被消费者线程引用。</p>
+<p>如下图（取自《Efficient Android Theading》）：Handle实例和它引用的对象不能被回收直到线程终止。</p>
+<img src="/2017/03/19/Android内存回收/031908.png" alt="线程通信引用链" title="线程通信引用链">
+<p>下面分别从发送数据消息和发送任务消息两个方面分别阐述。</p>
+<h5 id="发送数据消息"><a href="#发送数据消息" class="headerlink" title="发送数据消息"></a>发送数据消息</h5><p>先来看下代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">public class Outer &#123;</div><div class="line">   Handler mHandler = new Handler() &#123;</div><div class="line">        public void handleMessage(Message msg) &#123;</div><div class="line">         // Handle message</div><div class="line">        &#125;</div><div class="line">   &#125;;</div><div class="line">   public void doSend() &#123;</div><div class="line">       Message message = mHandler.obtainMessage();</div><div class="line">       message.obj = new SampleObject();     </div><div class="line">       mHandler.sendMessageDelayed(message, 60 * 1000);</div><div class="line">   &#125; </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>对应的引用树如下所示：（取自《Efficient Android Theading》）</p>
+<img src="/2017/03/19/Android内存回收/031909.png" alt="数据消息引用树" title="数据消息引用树">
+<p>观察图，这个代码实例符合前面内存泄漏的特征：让线程引用超过必要的对象，且保持引用太长时间。</p>
+<h5 id="发送任务消息"><a href="#发送任务消息" class="headerlink" title="发送任务消息"></a>发送任务消息</h5><p>发送一个Runnable，将在一个绑定了Looper的线程中运行，通过与发送数据消息一样会引起相同问题。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">public class Outer &#123;</div><div class="line">     Handler mHandler = new Handler() &#123;</div><div class="line">          public void handleMessage(Message msg) &#123;</div><div class="line">                // Handle message</div><div class="line">          &#125; </div><div class="line">     &#125;;</div><div class="line">     public void doPost() &#123; </div><div class="line">          mHandler.post(</div><div class="line">          new Runnable() &#123;</div><div class="line">                public void run() &#123;</div><div class="line">                   // Long running task</div><div class="line">                &#125; </div><div class="line">          &#125;);</div><div class="line">     &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p> 对应引用树如下：（取自《Efficient Android Theading》）</p>
+<img src="/2017/03/19/Android内存回收/031910.png" alt="任务消息引用树" title="任务消息引用树">
+<p>代码示例，通过doPost() 方法发送了一个Runnable给线程，Handler和Runnable实例都引用了外部类，这增加了潜在内存泄漏的大小。</p>
+<h2 id="避免内存泄漏"><a href="#避免内存泄漏" class="headerlink" title="避免内存泄漏"></a>避免内存泄漏</h2><p>让我们谈论一下如何避免，或者减轻这些上面叙述的一些内存泄漏问题。</p>
+<h3 id="使用静态内部类"><a href="#使用静态内部类" class="headerlink" title="使用静态内部类"></a>使用静态内部类</h3><p>局部类，内部类，匿名内部类都隐式持有外部类的引用。因此它们可能不仅仅泄漏它们自己的对象，而且还有它们从外部类引用的对象。典型地，一个Activity和它的视图层灰通过外部类的引用，造成一个重大的泄漏。</p>
+<p>通过使用静态内部类，仅仅持有的是全局的类对象，而不是实例对象。但这只是减轻内存泄漏，如果在静态内部类显式引用了其他实例对象，同样也会使这些对象保持到线程结束，引起内存泄漏。</p>
+<h3 id="使用弱引用"><a href="#使用弱引用" class="headerlink" title="使用弱引用"></a>使用弱引用</h3><p>在内部类持有外部类的对象时，可以用WeakReference包装外部类。这样在GC回收时可被标记可回收对象（其他还有强引用，软引用，虚引用）。</p>
+<h3 id="停止工作线程运行"><a href="#停止工作线程运行" class="headerlink" title="停止工作线程运行"></a>停止工作线程运行</h3><p>静态内部类和弱引用可以减轻内存泄漏，但不能完全避免，所以在不再需要的时候，应该结束线程，以使得线程内的对象被回收。</p>
+<h3 id="保留工作线程"><a href="#保留工作线程" class="headerlink" title="保留工作线程"></a>保留工作线程</h3><p>线程中的对象在线程结束时才会被回收，所以可以在新旧Activity切换时，保留线程，并从旧Activity中移出线程的引用，允许Activity对象被GC回收。</p>
+<h3 id="清空消息队列"><a href="#清空消息队列" class="headerlink" title="清空消息队列"></a>清空消息队列</h3><p>被发送到线程的消息如果有一个很长的执行延迟时间或者带有很小时间戳没执行时，会一直在队列里等待。当不再需要时，你应该移出它，使得它引用的对象能够释放。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>关于Android的内存管理大概就这些，其中的一些细节还为未深加研究。内存管理这块，重来都是一门语言的重点。需要我们多加注意，并多总结。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/内存回收/" rel="tag"># 内存回收</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/03/11/最全的Android进程间通信/" rel="next" title="最全的Android进程间通信">
+                <i class="fa fa-chevron-left"></i> 最全的Android进程间通信
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://avatars3.githubusercontent.com/u/21101545?v=3&s=460"
+               alt="qkcoder" />
+          <p class="site-author-name" itemprop="name">qkcoder</p>
+           
+              <p class="site-description motion-element" itemprop="description">reading the fucking source code</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#开篇之言"><span class="nav-number">1.</span> <span class="nav-text">开篇之言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#垃圾收集"><span class="nav-number">2.</span> <span class="nav-text">垃圾收集</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#对象是不是还活着"><span class="nav-number">2.1.</span> <span class="nav-text">对象是不是还活着</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#引用计数算法"><span class="nav-number">2.1.1.</span> <span class="nav-text">引用计数算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#可达性分析算法"><span class="nav-number">2.1.2.</span> <span class="nav-text">可达性分析算法</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#内存泄漏"><span class="nav-number">3.</span> <span class="nav-text">内存泄漏</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#线程相关的内存泄漏"><span class="nav-number">3.1.</span> <span class="nav-text">线程相关的内存泄漏</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#线程运行"><span class="nav-number">3.1.1.</span> <span class="nav-text">线程运行</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#内部类"><span class="nav-number">3.1.1.1.</span> <span class="nav-text">内部类</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#静态内部类"><span class="nav-number">3.1.1.2.</span> <span class="nav-text">静态内部类</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#生命周期不同步"><span class="nav-number">3.1.1.3.</span> <span class="nav-text">生命周期不同步</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#线程通信"><span class="nav-number">3.1.2.</span> <span class="nav-text">线程通信</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#发送数据消息"><span class="nav-number">3.1.2.1.</span> <span class="nav-text">发送数据消息</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#发送任务消息"><span class="nav-number">3.1.2.2.</span> <span class="nav-text">发送任务消息</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#避免内存泄漏"><span class="nav-number">4.</span> <span class="nav-text">避免内存泄漏</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#使用静态内部类"><span class="nav-number">4.1.</span> <span class="nav-text">使用静态内部类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用弱引用"><span class="nav-number">4.2.</span> <span class="nav-text">使用弱引用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#停止工作线程运行"><span class="nav-number">4.3.</span> <span class="nav-text">停止工作线程运行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#保留工作线程"><span class="nav-number">4.4.</span> <span class="nav-text">保留工作线程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#清空消息队列"><span class="nav-number">4.5.</span> <span class="nav-text">清空消息队列</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qkcoder</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://qkcoder-github-io.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://yoursite.com/2017/03/19/Android内存回收/';
+          this.page.identifier = '2017/03/19/Android内存回收/';
+          this.page.title = 'Android内存回收';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://qkcoder-github-io.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
