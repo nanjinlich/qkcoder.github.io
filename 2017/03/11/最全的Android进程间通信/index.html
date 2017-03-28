@@ -1,0 +1,872 @@
+<!doctype html>
+
+
+
+
+<html class="theme-next muse" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="进程通信," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="从官网文档出发，结合实例，给出最全的进程间通信方案。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="最全的Android进程间通信">
+<meta property="og:url" content="http://yoursite.com/2017/03/11/最全的Android进程间通信/index.html">
+<meta property="og:site_name" content="qkcoder'blog">
+<meta property="og:description" content="从官网文档出发，结合实例，给出最全的进程间通信方案。">
+<meta property="og:image" content="http://yoursite.com/2017/03/11/最全的Android进程间通信/031201.png">
+<meta property="og:image" content="http://yoursite.com/2017/03/11/最全的Android进程间通信/031202.png">
+<meta property="og:image" content="http://yoursite.com/2017/03/11/最全的Android进程间通信/031203.png">
+<meta property="og:image" content="http://yoursite.com/2017/03/11/最全的Android进程间通信/031204.png">
+<meta property="og:updated_time" content="2017-03-28T12:31:23.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="最全的Android进程间通信">
+<meta name="twitter:description" content="从官网文档出发，结合实例，给出最全的进程间通信方案。">
+<meta name="twitter:image" content="http://yoursite.com/2017/03/11/最全的Android进程间通信/031201.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: false,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/03/11/最全的Android进程间通信/"/>
+
+
+
+
+
+  <title> 最全的Android进程间通信 | qkcoder'blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">qkcoder'blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">reading the fucking source code</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/11/最全的Android进程间通信/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="qkcoder">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="qkcoder'blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                最全的Android进程间通信
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-11T10:02:22+08:00">
+                2017-03-11
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/进程/" itemprop="url" rel="index">
+                    <span itemprop="name">进程</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/03/11/最全的Android进程间通信/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count disqus-comment-count"
+                        data-disqus-identifier="2017/03/11/最全的Android进程间通信/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>从官网文档出发，结合实例，给出最全的进程间通信方案。</p>
+<a id="more"></a>
+<h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><ol>
+<li>Android进程间通信的方式？</li>
+<li>Android进程通信的详细流程？</li>
+<li>如何搭配Service完成进程通信工作？</li>
+</ol>
+<h2 id="开刀"><a href="#开刀" class="headerlink" title="开刀"></a>开刀</h2><h3 id="Android进程通信的方式"><a href="#Android进程通信的方式" class="headerlink" title="Android进程通信的方式"></a>Android进程通信的方式</h3><ul>
+<li>同步和异步远程过程调用(RPC)</li>
+<li>通过Messenger进行消息通信</li>
+<li>通过ResultReceiver返回数据</li>
+</ul>
+<h3 id="进程通信的详细流程"><a href="#进程通信的详细流程" class="headerlink" title="进程通信的详细流程"></a>进程通信的详细流程</h3><h4 id="引入概念"><a href="#引入概念" class="headerlink" title="引入概念"></a>引入概念</h4><h5 id="Android-RPC"><a href="#Android-RPC" class="headerlink" title="Android RPC"></a>Android RPC</h5><p>IPC由LinuxOS管理，通常支持一些IPC的技术，比如说信号，管道，消息队列，信号量，共享内存等。而在Android定制化的Linux内核里，Linux的IPC技术被替换为了Binder框架(进程间的一个RPC机制)。</p>
+<p>主要的步骤：</p>
+<ul>
+<li>方法和数据分解，也叫封送</li>
+<li>发送编组过的数据信息到远端进程</li>
+<li>在远端进程中改组数据信息，也叫做解封送</li>
+<li>发送返回值给原始进程</li>
+</ul>
+<h5 id="Binder"><a href="#Binder" class="headerlink" title="Binder"></a>Binder</h5><p>Binder允许程序在运行于不同进程的线程间发送方法和数据。服务端进程定义了一个由android.os.Binder类支持的远端接口，然后在客户端进程中的线程可以通过Binder访问这个远端接口。</p>
+<p>先来看下通过binder实现的IPC过程：</p>
+<img src="/2017/03/11/最全的Android进程间通信/031201.png" alt="IPC process" title="IPC process">
+<p>默认情况下客户端线程调用transact()会被阻塞，直到在远端线程中onTransact()方法执行完毕。IPC过程中传输的数据包含了Parcel对象，根据官方文档，Parcel是一个数据和对象引用的容器，在IPC过程中比Serializable更高效。另外onTransact()方法执行在取自binder线程池的一个binder线程中，这个线程池只会处理来自其他进程进来的请求，一般16个线程容量，版本不同可能会有差异。换句话说，可以在每个进程中并发处理16个远程调用。</p>
+<p>IPC过程是双向的，图中的流程会反转，所以异步的IPC会相当重要。</p>
+<p>如果服务端进程开始了一个传输过程，客户端进程在执行onTransact()方法时，调用transact()发送一个请求到服务端进程，客户端进程将不会在binder线程中接收进来的请求，而是等待第一次传输过程完成。</p>
+<p>为了解决这个场景，Binder也支持异步，通过设置IBinder.FLAG_ONEWAY。onway关键字可以在接口上，也可以在接口的方法上。接口上，接口所有方法异步；方法上，仅这个方法异步。设置这个标志后，客户端线程调用transact()不会阻塞且立刻返回，Binder会继续在服务端进程的binder线程中调用onTransact()方法，但并不会同步返回结果给客户端线程。</p>
+<h5 id="AIDL"><a href="#AIDL" class="headerlink" title="AIDL"></a>AIDL</h5><p>当一个进程想暴露功能给其他进程访问，必须定义这个通信协议。最简单和最通用的方法是使用AIDL(Android Interface Definition Language)。AIDL文件编译会生成支持IPC的Java代码。过程如下：</p>
+<img src="/2017/03/11/最全的Android进程间通信/031202.png" alt="IPC process1" title="IPC process1">
+<p>生产的Java接口被包含在客户端应用和服务端应用中，这个接口文件定义了两个内部类，Proxy和Stub，控制所有数据的封送和解封送处理，也自己控制传输过程。因此AIDL的创建自动生成了包装有Binder框架的Java代码并设置了通信协议。过程如下 (很重要！)：</p>
+<img src="/2017/03/11/最全的Android进程间通信/031203.png" alt="IPC process2" title="IPC process2">
+<p>结合图的过程，服务端必须支持来自多个进程和线程的同时方法调用，也就是说确保执行过程是线程安全的。</p>
+<h5 id="Messager"><a href="#Messager" class="headerlink" title="Messager"></a>Messager</h5><p>Android平台提供了一个高效的通过消息传递的内部线程通信方式。然而，它需要线程运行在同一进程中，因为Message对象被线程分配在共享内存里。如果线程运行在不同的进程里，它们没有共享消息的任何共享内存。相反，消息必须使用Binder框架跨进程通信。这个时候，我们可以考虑android.os.Messenage这个类，发消息到远端进程中线程绑定的Handler。</p>
+<p>Messenger 利用了Binder框架同时发送Message对象和Messenger的引用到客户端进程，Handler不会跨进程发送，而Messenger作为了中间者。</p>
+<p>如下图所示，一个Message可以通过Messenger被发送给其他进程的一个线程，而前提是客户端进程必须获取一个服务端进程的Messenger的引用。</p>
+<img src="/2017/03/11/最全的Android进程间通信/031204.png" alt="IPC process4" title="IPC process4">   
+<p>​      根据图中的过程，我们可以分为两步：</p>
+<ul>
+<li>发送一个Messenger引用到客户端进程。</li>
+<li>一旦客户端进程获取了Messenger的引用，就发送一个消息到服务端进程。这个步骤可以在想要的时候重复进行，你拿到Messenger引用，想什么时候发就什么时候发，发多少次你随意。</li>
+</ul>
+<h5 id="ResultReceiver"><a href="#ResultReceiver" class="headerlink" title="ResultReceiver"></a>ResultReceiver</h5><p>ResultReceiver主要用于连接组件进行通信，比如说一个Activity启动了一个Service时传入ResultReceiver，在Service中操作完成后，可以通过ResultReceiver发送结果回Activity。它内部原理，也利用了Binder框架，只是设计有一定缺陷。</p>
+<p>这个通信过程仅仅限于同一个包下，也就说本应用中。如果要跨进程通信，需要做点手脚。有两个方案：</p>
+<ul>
+<li>在传入ResultReceiver给Services时，对ResultReceiver进行包装，使得它适合跨进程通信。</li>
+<li>Service中接收这个ResultReceiver时，重新设置其类加载器，使得能够获取ResultReceiver，这一点，在官方文档中有提到。</li>
+</ul>
+<h3 id="搭配Service完成进程通信工作"><a href="#搭配Service完成进程通信工作" class="headerlink" title="搭配Service完成进程通信工作"></a>搭配Service完成进程通信工作</h3><p>Service是四大组件之一，它可以后台运行。这个后台的意思，只是无前台UI元素，Service还是默认运行在当前进程的主线程里。所以不能做过多长时任务操作，比如说网络下载，同样是需要另起线程以避免阻塞住线程，引起ANR。Service是连接组件的纽带，在同一进程中可以被其他组件访问，也可以暴露给远端进程访问。</p>
+<p>有人说，有了线程，还要Service干嘛。这主要是功能角色不同，主要区别如下：</p>
+<ul>
+<li>线程是进程工作的执行者，而在Activity中如果新启一个线程，如果Activity结束了，而线程还在，无法在Activity再次启动后对这个线程进行掌控。失控的线程如果有UI元素的引用，是一个危险事情。而Service恰恰就能解决这个问题，它可以在任何地方，再次启动或者绑定。</li>
+<li>Service无UI元素，可以用来暴露给其他进程进行访问，在多进程的场景中，可以更好衔接工作，比如说推送等。Service里可以搭配线程，进行耗时任务，比如说IntentService。</li>
+</ul>
+<h4 id="Service启动方式"><a href="#Service启动方式" class="headerlink" title="Service启动方式"></a>Service启动方式</h4><p>在Android5.0之后，官方建议显式启动Service，即明确指定类名或包名启动Service。两个启动方式：</p>
+<ul>
+<li>startService</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public void startActivity(Intent intent) &#123;</div><div class="line">        mBase.startActivity(intent);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li>bindService</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">@Override</div><div class="line">public boolean bindService(Intent service, ServiceConnection conn,int flags) &#123;</div><div class="line">        return mBase.bindService(service, conn, flags);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>两种方式最主要的区别是：binService可以调用Service的方法以及生命周期的流程不同。</p>
+<h4 id="IPC通信的步骤"><a href="#IPC通信的步骤" class="headerlink" title="IPC通信的步骤"></a>IPC通信的步骤</h4><ol>
+<li>在服务端，新建AIDL接口并编译。</li>
+<li>查看路径(build/generated/source/aidl/debug/包名) 下是否生成包含包装了Binder框架的接口。</li>
+<li>创建服务端Stub的方法实现类。</li>
+<li>新建服务，并将Stub实现类作为IBinder返回。</li>
+<li>Manifest文件中，配置服务，并设置 android:enabled=”true”，暴露服务给远端进程。</li>
+</ol>
+<h2 id="源码实例"><a href="#源码实例" class="headerlink" title="源码实例"></a>源码实例</h2><h3 id="同步IPC"><a href="#同步IPC" class="headerlink" title="同步IPC"></a>同步IPC</h3><p>####在服务端serverapp中新建AIDL文件</p>
+   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">// ISynchronous.aidl</div><div class="line">package com.qkcoder.serverapp;</div><div class="line">interface ISynchronous &#123;</div><div class="line"></div><div class="line">   String getThreadNameFast();</div><div class="line"></div><div class="line">   String getThreadNameSlow(long sleep);</div><div class="line"></div><div class="line">   String getThreadNameBlocking();</div><div class="line"></div><div class="line">   String getThreadNameUnblock();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="新建Stub的接口方法实现"><a href="#新建Stub的接口方法实现" class="headerlink" title="新建Stub的接口方法实现"></a>新建Stub的接口方法实现</h4>   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line">public class MySynchronous extends ISynchronous.Stub &#123;</div><div class="line">    CountDownLatch mLatch = new CountDownLatch(1);</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public String getThreadNameFast() throws RemoteException &#123;</div><div class="line">        return Thread.currentThread().getName();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public String getThreadNameSlow(long sleep) throws RemoteException &#123;</div><div class="line">        SystemClock.sleep(sleep);</div><div class="line">        return Thread.currentThread().getName();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public String getThreadNameBlocking() throws RemoteException &#123;</div><div class="line">        try &#123;</div><div class="line">            mLatch.await();</div><div class="line">        &#125; catch (InterruptedException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">        return Thread.currentThread().getName();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public String getThreadNameUnblock() throws RemoteException &#123;</div><div class="line">        mLatch.countDown();</div><div class="line">        return Thread.currentThread().getName();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="创建服务"><a href="#创建服务" class="headerlink" title="创建服务"></a>创建服务</h4>   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">public class MyService extends Service&#123;</div><div class="line"></div><div class="line">    private ISynchronous.Stub mySynchronous=new MySynchronous();</div><div class="line"></div><div class="line">    @Nullable</div><div class="line">    @Override</div><div class="line">    public IBinder onBind(Intent intent) &#123;</div><div class="line">        return mySynchronous;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public void onCreate() &#123;</div><div class="line">        super.onCreate();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="Manifest配置"><a href="#Manifest配置" class="headerlink" title="Manifest配置"></a>Manifest配置</h4>   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;service</div><div class="line">            android:name=&quot;.MyService&quot;</div><div class="line">            android:enabled=&quot;true&quot;</div><div class="line">            android:exported=&quot;true&quot;&gt;</div><div class="line">            &lt;intent-filter&gt;</div><div class="line">                &lt;action android:name=&quot;com.qkcoder.serverapp.ISynchronous&quot; /&gt;</div><div class="line">            &lt;/intent-filter&gt;</div><div class="line">&lt;/service&gt;</div></pre></td></tr></table></figure>
+<h4 id="将aidl包连同定义的aidl文件copy至客户端app"><a href="#将aidl包连同定义的aidl文件copy至客户端app" class="headerlink" title="将aidl包连同定义的aidl文件copy至客户端app."></a>将aidl包连同定义的aidl文件copy至客户端app.</h4><h4 id="在客户端app中启动服务端Service"><a href="#在客户端app中启动服务端Service" class="headerlink" title="在客户端app中启动服务端Service"></a>在客户端app中启动服务端Service</h4>   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">Intent intent = new Intent();</div><div class="line">intent.setAction(ACTION);</div><div class="line">intent.setPackage(PACKAGE);</div><div class="line">bindService(intent, connection, BIND_AUTO_CREATE);</div></pre></td></tr></table></figure>
+<p>   其中ServiceConnection定义如下：</p>
+   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line">private ServiceConnection connection = new ServiceConnection() &#123;</div><div class="line">        @Override</div><div class="line">        public void onServiceConnected(ComponentName name, IBinder service) &#123;</div><div class="line">            Log.d(&quot;abc&quot;, &quot;bind service .......&quot;);</div><div class="line">            mySynchronous = ISynchronous.Stub.asInterface(service);</div><div class="line">            if (mySynchronous != null) &#123;</div><div class="line">                new Thread(new Runnable() &#123;</div><div class="line">                    @Override</div><div class="line">                    public void run() &#123;</div><div class="line">                        try &#123;</div><div class="line">                            String remoteThreadName = mySynchronous.getThreadNameFast();</div><div class="line">                            Log.d(&quot;abc&quot;, &quot;getThreadNameFast,remoteThreadName=&quot; + remoteThreadName);</div><div class="line">                        &#125; catch (RemoteException e) &#123;</div><div class="line">                            e.printStackTrace();</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;).start();</div><div class="line">                new Thread(new Runnable() &#123;</div><div class="line">                    @Override</div><div class="line">                    public void run() &#123;</div><div class="line">                        try &#123;</div><div class="line">                            String remoteThreadName = mySynchronous.getThreadNameSlow(4000);</div><div class="line">                            Log.d(&quot;abc&quot;, &quot;getThreadNameSlow,remoteThreadName=&quot; + remoteThreadName);</div><div class="line">                        &#125; catch (RemoteException e) &#123;</div><div class="line">                            e.printStackTrace();</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;).start();</div><div class="line">                new Thread(new Runnable() &#123;</div><div class="line">                    @Override</div><div class="line">                    public void run() &#123;</div><div class="line">                        try &#123;</div><div class="line">                            String remoteThreadName = mySynchronous.getThreadNameBlocking();</div><div class="line">                            Log.d(&quot;abc&quot;, &quot;getThreadNameBlocking,remoteThreadName=&quot; + remoteThreadName);</div><div class="line">                        &#125; catch (RemoteException e) &#123;</div><div class="line">                            e.printStackTrace();</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;).start();</div><div class="line">                new Thread(new Runnable() &#123;</div><div class="line">                    @Override</div><div class="line">                    public void run() &#123;</div><div class="line">                        try &#123;</div><div class="line">                            String remoteThreadName = mySynchronous.getThreadNameUnblock();</div><div class="line">                            Log.d(&quot;abc&quot;, &quot;getThreadNameUnblock,remoteThreadName=&quot; + remoteThreadName);</div><div class="line">                        &#125; catch (RemoteException e) &#123;</div><div class="line">                            e.printStackTrace();</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;).start();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        @Override</div><div class="line">        public void onServiceDisconnected(ComponentName name) &#123;</div><div class="line"></div><div class="line">        &#125;</div><div class="line">    &#125;;</div></pre></td></tr></table></figure>
+<h3 id="异步IPC"><a href="#异步IPC" class="headerlink" title="异步IPC"></a>异步IPC</h3><p>与同步IPC不同在于在服务端中创建AIDL文件时，有oneway关键字。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">// IAsynchronousInterface.aidl</div><div class="line">package com.qkcoder.serverapp;</div><div class="line">import com.qkcoder.serverapp.IAsynchronousCallback;</div><div class="line">interface IAsynchronousInterface &#123;</div><div class="line">     oneway void getThreadNameSlow(IAsynchronousCallback callBack);</div><div class="line">     String getThreadName();</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其中IAsynchronousCallback是接口回调。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">// IAsynchronousCallback.aidl</div><div class="line">package com.qkcoder.serverapp;</div><div class="line">interface IAsynchronousCallback &#123;</div><div class="line">     void handleResult(String name);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>stub实现</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">public class MyAsynchronous extends IAsynchronousInterface.Stub &#123;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public void getThreadNameSlow(IAsynchronousCallback callBack) throws RemoteException &#123;</div><div class="line">        Log.d(&quot;abcdef&quot;,&quot;getThreadNameSlow server process is handling....&quot;);</div><div class="line">        String threadName = Thread.currentThread().getName();</div><div class="line">        SystemClock.sleep(1000);</div><div class="line">        callBack.handleResult(threadName);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public String getThreadName() throws RemoteException &#123;</div><div class="line">        return Thread.currentThread().getName();</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>对应Service:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">public class MyService1 extends Service &#123;</div><div class="line"></div><div class="line">    private IAsynchronousInterface.Stub mAsynchronous = new MyAsynchronous();</div><div class="line"></div><div class="line">    @Nullable</div><div class="line">    @Override</div><div class="line">    public IBinder onBind(Intent intent) &#123;</div><div class="line">        return mAsynchronous;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public void onCreate() &#123;</div><div class="line">        super.onCreate();</div><div class="line">        Log.d(&quot;aaa&quot;,&quot;ProcessID=&quot;+ Process.myPid());</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>对应ServiceConnection:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">  private ServiceConnection connection1 = new ServiceConnection() &#123;</div><div class="line">        @Override</div><div class="line">        public void onServiceConnected(ComponentName name, IBinder service) &#123;</div><div class="line">            Log.d(&quot;abcd&quot;, &quot;bind service .......&quot;);</div><div class="line">            mAsynchronous = IAsynchronousInterface.Stub.asInterface(service);</div><div class="line">            if (mAsynchronous != null) &#123;</div><div class="line">                try &#123;</div><div class="line">                    mAsynchronous.getThreadNameSlow(new MyAsynchronousCallback());</div><div class="line">                &#125; catch (RemoteException e) &#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        @Override</div><div class="line">        public void onServiceDisconnected(ComponentName name) &#123;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h3 id="Messenger双向通信"><a href="#Messenger双向通信" class="headerlink" title="Messenger双向通信"></a>Messenger双向通信</h3><h4 id="服务端创建服务"><a href="#服务端创建服务" class="headerlink" title="服务端创建服务"></a>服务端创建服务</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">public class WorkerThreadService extends Service &#123;</div><div class="line"></div><div class="line">    WorkerThread mWorkerThread;</div><div class="line">    Messenger mWorkerMessenger;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public void onCreate() &#123;</div><div class="line">        super.onCreate();</div><div class="line">        Log.d(&quot;a1&quot;, &quot;WorkerThreadService is onCreate....&quot;);</div><div class="line">        mWorkerThread = new WorkerThread();</div><div class="line">        mWorkerThread.start();</div><div class="line">    &#125;</div><div class="line">   </div><div class="line">   private void onWorkerPrepared() &#123;</div><div class="line">        mWorkerMessenger = new Messenger(mWorkerThread.mWorkerHandler);</div><div class="line">        //mWorkerMessenger已经赋值，通知释放当前对象锁</div><div class="line">        synchronized (this) &#123;</div><div class="line">            notifyAll();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    @Nullable</div><div class="line">    @Override</div><div class="line">    public IBinder onBind(Intent intent) &#123;</div><div class="line">        //mWorkerMessenger此时还为空，必须等待线程赋值完成</div><div class="line">        //通过当前对象锁，阻塞</div><div class="line">        synchronized (this) &#123;</div><div class="line">            if (mWorkerMessenger == null) &#123;</div><div class="line">                try &#123;</div><div class="line">                    wait();</div><div class="line">                &#125; catch (InterruptedException e) &#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        return mWorkerMessenger.getBinder();</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    @Override</div><div class="line">    public void onDestroy() &#123;</div><div class="line">        super.onDestroy();</div><div class="line">        mWorkerThread.quit();</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    private class WorkerThread extends Thread &#123;</div><div class="line">        Handler mWorkerHandler;</div><div class="line"> </div><div class="line">        @Override</div><div class="line">        public void run() &#123;</div><div class="line">            Looper.prepare();</div><div class="line">            mWorkerHandler = new Handler() &#123;</div><div class="line">                @Override</div><div class="line">                public void handleMessage(Message msg) &#123;</div><div class="line">                    Log.d(&quot;a1&quot;, &quot;Message what=&quot; + msg.what);</div><div class="line">                    if (msg.replyTo != null) &#123;</div><div class="line">                        try &#123;</div><div class="line">                            msg.replyTo.send(Message.obtain(null, msg.what, 0, 0));</div><div class="line">                        &#125; catch (RemoteException e) &#123;</div><div class="line">                            e.printStackTrace();</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;;</div><div class="line">            onWorkerPrepared();</div><div class="line">            Looper.loop();</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        public void quit() &#123;</div><div class="line">            mWorkerHandler.getLooper().quit();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ol>
+<li>客户端调起远端服务器服务<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">public class MessengerTwoWayActivity extends AppCompatActivity &#123;</div><div class="line"></div><div class="line">    private boolean mBound = false;</div><div class="line">    private Messenger mRemoteService = null;</div><div class="line"> </div><div class="line">    private ServiceConnection mRemoteCon = new ServiceConnection() &#123;</div><div class="line">        @Override</div><div class="line">        public void onServiceConnected(ComponentName name, IBinder service) &#123;</div><div class="line">            Log.d(&quot;111&quot;, &quot;-----------onServiceConnected&quot;);</div><div class="line">            mRemoteService = new Messenger(service);</div><div class="line">            mBound = true;</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        @Override</div><div class="line">        public void onServiceDisconnected(ComponentName name) &#123;</div><div class="line">            mRemoteService = null;</div><div class="line">            mBound = false;</div><div class="line">        &#125;</div><div class="line">    &#125;;</div><div class="line"> </div><div class="line">    @Override</div><div class="line">    protected void onCreate(Bundle savedInstanceState) &#123;</div><div class="line">        super.onCreate(savedInstanceState);</div><div class="line">        setContentView(R.layout.activity_messenge_one_way);</div><div class="line"> </div><div class="line">        Intent intent = new Intent();</div><div class="line">        intent.setAction(&quot;com.qkcoder.serverapp.MESSENGERACTION&quot;);</div><div class="line">        intent.setPackage(&quot;com.qkcoder.serverapp&quot;);</div><div class="line">        bindService(intent, mRemoteCon, BIND_AUTO_CREATE);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    public void onSendClick(View view) &#123;</div><div class="line">        if (mBound) &#123;</div><div class="line">            Log.d(&quot;111&quot;, &quot;-----------Messenger OneWay&quot;);</div><div class="line">            Log.d(&quot;111&quot;, &quot;currentThreadId:&quot; + Thread.currentThread().getId());</div><div class="line">            try &#123;</div><div class="line">                Message message = Message.obtain(null, 2, 0, 0);</div><div class="line">                message.replyTo = new Messenger(new Handler() &#123;</div><div class="line">                    @Override</div><div class="line">                    public void handleMessage(Message msg) &#123;</div><div class="line">                        Log.d(&quot;111&quot;, &quot;currentThreadId:&quot; + Thread.currentThread().getId());</div><div class="line">                        Log.d(&quot;111&quot;, &quot;msh-what=&quot; + msg.what);</div><div class="line">                    &#125;</div><div class="line">                &#125;);</div><div class="line">                mRemoteService.send(message);</div><div class="line">            &#125; catch (RemoteException e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="ResultReceiver实例"><a href="#ResultReceiver实例" class="headerlink" title="ResultReceiver实例"></a>ResultReceiver实例</h3><p>同一进程下，不举例了。我们重点看下跨进程怎么用ResultReceiver。</p>
+<p>####客户端调服务器远端服务时，包装ResultReceiver再调起服务</p>
+<p>#####客户端app</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line">public class ResultReceiverActivity extends AppCompatActivity &#123;</div><div class="line">    MyResultReceiver resultReceiver;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    protected void onCreate(Bundle savedInstanceState) &#123;</div><div class="line">        super.onCreate(savedInstanceState);</div><div class="line"> </div><div class="line">        resultReceiver = new MyResultReceiver(null);</div><div class="line">        Intent intent = new Intent();</div><div class="line">        intent.setAction(&quot;com.qkcoder.serverapp.RESULTACTION&quot;);</div><div class="line">        intent.setPackage(&quot;com.qkcoder.serverapp&quot;);</div><div class="line">        intent.putExtra(&quot;receiver&quot;, receiverForSending(resultReceiver));</div><div class="line">        startService(intent);</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    private static class MyResultReceiver extends ResultReceiver &#123;</div><div class="line"> </div><div class="line">        /**</div><div class="line">         * Create a new ResultReceive to receive results.  Your</div><div class="line">         * &#123;@link #onReceiveResult&#125; method will be called from the thread running</div><div class="line">         * &lt;var&gt;handler&lt;/var&gt; if given, or from an arbitrary thread if null.</div><div class="line">         *</div><div class="line">         * @param handler</div><div class="line">         */</div><div class="line">        public MyResultReceiver(Handler handler) &#123;</div><div class="line">            super(handler);</div><div class="line">        &#125;</div><div class="line"> </div><div class="line">        @Override</div><div class="line">        protected void onReceiveResult(int resultCode, Bundle resultData) &#123;</div><div class="line">            if (resultCode == 100) &#123;</div><div class="line">                Log.d(&quot;120&quot;, &quot;receive data:&quot; + resultData.getString(&quot;data&quot;));</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    public static ResultReceiver receiverForSending(ResultReceiver actualReceiver) &#123;</div><div class="line">        Parcel parcel = Parcel.obtain();</div><div class="line">        actualReceiver.writeToParcel(parcel, 0);</div><div class="line">        parcel.setDataPosition(0);</div><div class="line">        ResultReceiver receiverForSending = ResultReceiver.CREATOR.createFromParcel(parcel);</div><div class="line">        parcel.recycle();</div><div class="line">        return receiverForSending;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>#####服务端app</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line">public class ResultReceiverService extends Service &#123;</div><div class="line"></div><div class="line">    private ResultReceiver resultReceiver;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    public void onCreate() &#123;</div><div class="line">        super.onCreate();</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    @Override</div><div class="line">    public int onStartCommand(Intent intent,</div><div class="line">                              int flags, int startId) &#123;</div><div class="line"> </div><div class="line">        resultReceiver=intent.getParcelableExtra(&quot;receiver&quot;);</div><div class="line">        if (resultReceiver != null) &#123;</div><div class="line">            Log.d(&quot;aaa&quot;, &quot;1----------------------1---------------------1&quot;);</div><div class="line">        &#125;</div><div class="line">        new WorkThread().start();</div><div class="line">        return START_STICKY;</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    @Nullable</div><div class="line">    @Override</div><div class="line">    public IBinder onBind(Intent intent) &#123;</div><div class="line">        return null;</div><div class="line">    &#125;</div><div class="line"> </div><div class="line">    private class WorkThread extends Thread &#123;</div><div class="line">        @Override</div><div class="line">        public void run() &#123;</div><div class="line">            Bundle bundle = new Bundle();</div><div class="line">            bundle.putString(&quot;data&quot;, &quot;hello world! resultReceiver....&quot;);</div><div class="line">            if (resultReceiver != null) &#123;</div><div class="line">                resultReceiver.send(100, bundle);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>####服务器端获取ResultReceiver，指定类加载器</p>
+<p> #####服务器App</p>
+   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div></pre></td><td class="code"><pre><div class="line">public class ResultReceiverService extends Service &#123;</div><div class="line"></div><div class="line">    private ResultReceiver resultReceiver;</div><div class="line">    @Override</div><div class="line">    public void onCreate() &#123;</div><div class="line">        super.onCreate();</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    @Override</div><div class="line">    public int onStartCommand(Intent intent,</div><div class="line">                              int flags, int startId) &#123;</div><div class="line">        try &#123;</div><div class="line">            hackContextGetReceiver(intent);</div><div class="line">        &#125; catch (PackageManager.NameNotFoundException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">        resultReceiver=intent.getParcelableExtra(&quot;receiver&quot;);</div><div class="line">        if (resultReceiver != null) &#123;</div><div class="line">            Log.d(&quot;aaa&quot;, &quot;1----------------------1---------------------1&quot;);</div><div class="line">        &#125;</div><div class="line">        new WorkThread().start();</div><div class="line">        return START_STICKY;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    @Nullable</div><div class="line">    @Override</div><div class="line">    public IBinder onBind(Intent intent) &#123;</div><div class="line">        return null;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    private class WorkThread extends Thread &#123;</div><div class="line">        @Override</div><div class="line">        public void run() &#123;</div><div class="line">            Bundle bundle = new Bundle();</div><div class="line">            bundle.putString(&quot;data&quot;, &quot;hello world! resultReceiver....&quot;);</div><div class="line">            if (resultReceiver != null) &#123;</div><div class="line">                resultReceiver.send(100, bundle);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    private ResultReceiver hackContextGetReceiver(Intent intent) throws PackageManager.NameNotFoundException &#123;</div><div class="line">        Context context = createPackageContext(&quot;com.qkcoder.rpcdemp&quot;, CONTEXT_INCLUDE_CODE |</div><div class="line">                CONTEXT_IGNORE_SECURITY);</div><div class="line">        ClassLoader classLoader = context.getClassLoader();</div><div class="line">        Bundle bundle = intent.getExtras();</div><div class="line">        bundle.setClassLoader(classLoader);</div><div class="line">        ResultReceiver resultReceiver = bundle.getParcelable(&quot;receiver&quot;);</div><div class="line">        if (resultReceiver != null) &#123;</div><div class="line">            Log.d(&quot;aaa&quot;, &quot;1----------------------1---------------------1&quot;);</div><div class="line">        &#125;</div><div class="line">        return resultReceiver;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>#####客户端app</p>
+<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">public class ResultReceiverActivity extends AppCompatActivity &#123;</div><div class="line"></div><div class="line">    MyResultReceiver resultReceiver;</div><div class="line"></div><div class="line">    @Override</div><div class="line">    protected void onCreate(Bundle savedInstanceState) &#123;</div><div class="line">        super.onCreate(savedInstanceState);</div><div class="line">    </div><div class="line">        resultReceiver = new MyResultReceiver(null);</div><div class="line">        Intent intent = new Intent();</div><div class="line">        intent.setAction(&quot;com.qkcoder.serverapp.RESULTACTION&quot;);</div><div class="line">        intent.setPackage(&quot;com.qkcoder.serverapp&quot;);</div><div class="line">        intent.putExtra(&quot;receiver&quot;,resultReceiver);</div><div class="line">        startService(intent);</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    private static class MyResultReceiver extends ResultReceiver &#123;</div><div class="line">    </div><div class="line">        /**</div><div class="line">         * Create a new ResultReceive to receive results.  Your</div><div class="line">         * &#123;@link #onReceiveResult&#125; method will be called from the thread running</div><div class="line">         * &lt;var&gt;handler&lt;/var&gt; if given, or from an arbitrary thread if null.</div><div class="line">         *</div><div class="line">         * @param handler</div><div class="line">         */</div><div class="line">        public MyResultReceiver(Handler handler) &#123;</div><div class="line">            super(handler);</div><div class="line">        &#125;</div><div class="line">    </div><div class="line">        @Override</div><div class="line">        protected void onReceiveResult(int resultCode, Bundle resultData) &#123;</div><div class="line">            if (resultCode == 100) &#123;</div><div class="line">                Log.d(&quot;120&quot;, &quot;receive data:&quot; + resultData.getString(&quot;data&quot;));</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</code></pre><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在一个应用中大多数进程间通信被幕后的高级组件掌控，但如果有需要，我们可以自己实现Binder机制：RPC和Messenger。如果需要并发处理到来的请求，可以考虑RPC。反之，我们可以考虑Messenger简单地实现通信，记住Messenger是单线程运行的。而ResultReceiver默认在同一个进程下可以搞事，进程间通信还得包装一下，可以不考虑，它内部也是Binder机制，不过比较鸡肋罢了，还不如用RPC。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="https://developer.android.com/guide/components/aidl.html" target="_blank" rel="external">https://developer.android.com/guide/components/aidl.html</a></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/进程通信/" rel="tag"># 进程通信</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+        <!-- JiaThis Button BEGIN -->
+<div class="jiathis_style">
+  <a class="jiathis_button_tsina"></a>
+  <a class="jiathis_button_tqq"></a>
+  <a class="jiathis_button_weixin"></a>
+  <a class="jiathis_button_cqq"></a>
+  <a class="jiathis_button_douban"></a>
+  <a class="jiathis_button_renren"></a>
+  <a class="jiathis_button_qzone"></a>
+  <a class="jiathis_button_kaixin001"></a>
+  <a class="jiathis_button_copy"></a>
+  <a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jiathis_separator jtico jtico_jiathis" target="_blank"></a>
+  <a class="jiathis_counter_style"></a>
+</div>
+<script type="text/javascript" >
+  var jiathis_config={
+    hideMore:false
+  }
+</script>
+<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div id="disqus_thread">
+        <noscript>
+          Please enable JavaScript to view the
+          <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+        </noscript>
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.jpg"
+               alt="qkcoder" />
+          <p class="site-author-name" itemprop="name">qkcoder</p>
+           
+              <p class="site-description motion-element" itemprop="description">reading the fucking source code</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              <a href="/categories/index.html">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              <a href="/tags/index.html">
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#问题"><span class="nav-number">1.</span> <span class="nav-text">问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#开刀"><span class="nav-number">2.</span> <span class="nav-text">开刀</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Android进程通信的方式"><span class="nav-number">2.1.</span> <span class="nav-text">Android进程通信的方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#进程通信的详细流程"><span class="nav-number">2.2.</span> <span class="nav-text">进程通信的详细流程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#引入概念"><span class="nav-number">2.2.1.</span> <span class="nav-text">引入概念</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#Android-RPC"><span class="nav-number">2.2.1.1.</span> <span class="nav-text">Android RPC</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Binder"><span class="nav-number">2.2.1.2.</span> <span class="nav-text">Binder</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#AIDL"><span class="nav-number">2.2.1.3.</span> <span class="nav-text">AIDL</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#Messager"><span class="nav-number">2.2.1.4.</span> <span class="nav-text">Messager</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#ResultReceiver"><span class="nav-number">2.2.1.5.</span> <span class="nav-text">ResultReceiver</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#搭配Service完成进程通信工作"><span class="nav-number">2.3.</span> <span class="nav-text">搭配Service完成进程通信工作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Service启动方式"><span class="nav-number">2.3.1.</span> <span class="nav-text">Service启动方式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#IPC通信的步骤"><span class="nav-number">2.3.2.</span> <span class="nav-text">IPC通信的步骤</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码实例"><span class="nav-number">3.</span> <span class="nav-text">源码实例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#同步IPC"><span class="nav-number">3.1.</span> <span class="nav-text">同步IPC</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#新建Stub的接口方法实现"><span class="nav-number">3.1.1.</span> <span class="nav-text">新建Stub的接口方法实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建服务"><span class="nav-number">3.1.2.</span> <span class="nav-text">创建服务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Manifest配置"><span class="nav-number">3.1.3.</span> <span class="nav-text">Manifest配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#将aidl包连同定义的aidl文件copy至客户端app"><span class="nav-number">3.1.4.</span> <span class="nav-text">将aidl包连同定义的aidl文件copy至客户端app.</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#在客户端app中启动服务端Service"><span class="nav-number">3.1.5.</span> <span class="nav-text">在客户端app中启动服务端Service</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#异步IPC"><span class="nav-number">3.2.</span> <span class="nav-text">异步IPC</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Messenger双向通信"><span class="nav-number">3.3.</span> <span class="nav-text">Messenger双向通信</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#服务端创建服务"><span class="nav-number">3.3.1.</span> <span class="nav-text">服务端创建服务</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ResultReceiver实例"><span class="nav-number">3.4.</span> <span class="nav-text">ResultReceiver实例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">qkcoder</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  
+
+    
+      <script id="dsq-count-scr" src="https://qkcoder-github-io.disqus.com/count.js" async></script>
+    
+
+    
+      <script type="text/javascript">
+        var disqus_config = function () {
+          this.page.url = 'http://yoursite.com/2017/03/11/最全的Android进程间通信/';
+          this.page.identifier = '2017/03/11/最全的Android进程间通信/';
+          this.page.title = '最全的Android进程间通信';
+        };
+        var d = document, s = d.createElement('script');
+        s.src = 'https://qkcoder-github-io.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      </script>
+    
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
