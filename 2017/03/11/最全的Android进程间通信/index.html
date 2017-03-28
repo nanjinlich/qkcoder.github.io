@@ -85,20 +85,20 @@
 
 
 
-<meta name="description" content="从官网文档出发，结合实例，给出最全的进程间通信方案。">
+<meta name="description" content="从官网文档出发，结合实例，给出最全的进程间通信方案。讨论如何多进程通信，以及各个方案的优缺点。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="最全的Android进程间通信">
 <meta property="og:url" content="http://yoursite.com/2017/03/11/最全的Android进程间通信/index.html">
 <meta property="og:site_name" content="qkcoder'blog">
-<meta property="og:description" content="从官网文档出发，结合实例，给出最全的进程间通信方案。">
+<meta property="og:description" content="从官网文档出发，结合实例，给出最全的进程间通信方案。讨论如何多进程通信，以及各个方案的优缺点。">
 <meta property="og:image" content="http://yoursite.com/2017/03/11/最全的Android进程间通信/031201.png">
 <meta property="og:image" content="http://yoursite.com/2017/03/11/最全的Android进程间通信/031202.png">
 <meta property="og:image" content="http://yoursite.com/2017/03/11/最全的Android进程间通信/031203.png">
 <meta property="og:image" content="http://yoursite.com/2017/03/11/最全的Android进程间通信/031204.png">
-<meta property="og:updated_time" content="2017-03-28T12:31:23.000Z">
+<meta property="og:updated_time" content="2017-03-28T12:36:41.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="最全的Android进程间通信">
-<meta name="twitter:description" content="从官网文档出发，结合实例，给出最全的进程间通信方案。">
+<meta name="twitter:description" content="从官网文档出发，结合实例，给出最全的进程间通信方案。讨论如何多进程通信，以及各个方案的优缺点。">
 <meta name="twitter:image" content="http://yoursite.com/2017/03/11/最全的Android进程间通信/031201.png">
 
 
@@ -377,7 +377,7 @@
       
 
       
-        <p>从官网文档出发，结合实例，给出最全的进程间通信方案。</p>
+        <p>从官网文档出发，结合实例，给出最全的进程间通信方案。讨论如何多进程通信，以及各个方案的优缺点。</p>
 <a id="more"></a>
 <h2 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h2><ol>
 <li>Android进程间通信的方式？</li>
@@ -399,20 +399,20 @@
 </ul>
 <h5 id="Binder"><a href="#Binder" class="headerlink" title="Binder"></a>Binder</h5><p>Binder允许程序在运行于不同进程的线程间发送方法和数据。服务端进程定义了一个由android.os.Binder类支持的远端接口，然后在客户端进程中的线程可以通过Binder访问这个远端接口。</p>
 <p>先来看下通过binder实现的IPC过程：</p>
-<img src="/2017/03/11/最全的Android进程间通信/031201.png" alt="IPC process" title="IPC process">
+<img src="/2017/03/11/最全的Android进程间通信/031201.png" alt="IPC过程" title="IPC过程">
 <p>默认情况下客户端线程调用transact()会被阻塞，直到在远端线程中onTransact()方法执行完毕。IPC过程中传输的数据包含了Parcel对象，根据官方文档，Parcel是一个数据和对象引用的容器，在IPC过程中比Serializable更高效。另外onTransact()方法执行在取自binder线程池的一个binder线程中，这个线程池只会处理来自其他进程进来的请求，一般16个线程容量，版本不同可能会有差异。换句话说，可以在每个进程中并发处理16个远程调用。</p>
 <p>IPC过程是双向的，图中的流程会反转，所以异步的IPC会相当重要。</p>
 <p>如果服务端进程开始了一个传输过程，客户端进程在执行onTransact()方法时，调用transact()发送一个请求到服务端进程，客户端进程将不会在binder线程中接收进来的请求，而是等待第一次传输过程完成。</p>
 <p>为了解决这个场景，Binder也支持异步，通过设置IBinder.FLAG_ONEWAY。onway关键字可以在接口上，也可以在接口的方法上。接口上，接口所有方法异步；方法上，仅这个方法异步。设置这个标志后，客户端线程调用transact()不会阻塞且立刻返回，Binder会继续在服务端进程的binder线程中调用onTransact()方法，但并不会同步返回结果给客户端线程。</p>
 <h5 id="AIDL"><a href="#AIDL" class="headerlink" title="AIDL"></a>AIDL</h5><p>当一个进程想暴露功能给其他进程访问，必须定义这个通信协议。最简单和最通用的方法是使用AIDL(Android Interface Definition Language)。AIDL文件编译会生成支持IPC的Java代码。过程如下：</p>
-<img src="/2017/03/11/最全的Android进程间通信/031202.png" alt="IPC process1" title="IPC process1">
+<img src="/2017/03/11/最全的Android进程间通信/031202.png" alt="AIDL文件编译成Java代码过程" title="AIDL文件编译成Java代码过程">
 <p>生产的Java接口被包含在客户端应用和服务端应用中，这个接口文件定义了两个内部类，Proxy和Stub，控制所有数据的封送和解封送处理，也自己控制传输过程。因此AIDL的创建自动生成了包装有Binder框架的Java代码并设置了通信协议。过程如下 (很重要！)：</p>
-<img src="/2017/03/11/最全的Android进程间通信/031203.png" alt="IPC process2" title="IPC process2">
+<img src="/2017/03/11/最全的Android进程间通信/031203.png" alt="Binder机制的过程" title="Binder机制的过程">
 <p>结合图的过程，服务端必须支持来自多个进程和线程的同时方法调用，也就是说确保执行过程是线程安全的。</p>
 <h5 id="Messager"><a href="#Messager" class="headerlink" title="Messager"></a>Messager</h5><p>Android平台提供了一个高效的通过消息传递的内部线程通信方式。然而，它需要线程运行在同一进程中，因为Message对象被线程分配在共享内存里。如果线程运行在不同的进程里，它们没有共享消息的任何共享内存。相反，消息必须使用Binder框架跨进程通信。这个时候，我们可以考虑android.os.Messenage这个类，发消息到远端进程中线程绑定的Handler。</p>
 <p>Messenger 利用了Binder框架同时发送Message对象和Messenger的引用到客户端进程，Handler不会跨进程发送，而Messenger作为了中间者。</p>
 <p>如下图所示，一个Message可以通过Messenger被发送给其他进程的一个线程，而前提是客户端进程必须获取一个服务端进程的Messenger的引用。</p>
-<img src="/2017/03/11/最全的Android进程间通信/031204.png" alt="IPC process4" title="IPC process4">   
+<img src="/2017/03/11/最全的Android进程间通信/031204.png" alt="Messenger的过程" title="Messenger的过程">   
 <p>​      根据图中的过程，我们可以分为两步：</p>
 <ul>
 <li>发送一个Messenger引用到客户端进程。</li>
